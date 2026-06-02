@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Análisis de Adquisición: Google Workspace vs Microsoft 365</title>
+    <title>Análisis de Adquisición Detallado: Google Workspace vs Microsoft 365</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,807 +13,916 @@
             background-color: #FAFAF9; /* stone-50 */
             color: #292524; /* stone-800 */
         }
+        /* Custom scrollbar for main content */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f5f5f4; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d6d3d1; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e; 
+        }
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
             height: 350px;
-            max-height: 400px;
         }
-        @media (max-width: 768px) {
-            .chart-container {
-                height: 250px;
+        /* Sidebar transitions */
+        .sidebar-open {
+            transform: translateX(0%);
+        }
+        .sidebar-closed {
+            transform: translateX(-100%);
+        }
+        @media (min-width: 768px) {
+            .md\:sidebar-closed {
+                margin-left: -18rem; /* 72 units = 18rem */
             }
         }
-        .tab-active {
-            border-bottom: 2px solid #0f172a; /* slate-900 */
-            color: #0f172a;
-            font-weight: 600;
-        }
-        .tab-inactive {
-            border-bottom: 2px solid transparent;
-            color: #78716c; /* stone-500 */
-        }
-        .tab-inactive:hover {
-            color: #44403c;
-            border-bottom-color: #d6d3d1;
+        html {
+            scroll-behavior: smooth;
         }
     </style>
-    <!-- Chosen Palette: Warm Neutrals (Stone/Slate) with subtle brand accents (M365 Blue, Google Multi/Green) -->
-    <!-- Application Structure Plan: The SPA is structured as a strategic dashboard. It begins with an Executive Summary directly addressing the core needs (Meetings, Domain). Next, it features interactive data visualizations comparing meeting capacities. A tabbed comparison matrix allows deep dives into specific plans without overwhelming the user. Finally, an interactive "Recommendation Engine" guides the procurement team based on specific operational scenarios. This structure prioritizes immediate answers while allowing detailed exploration. -->
-    <!-- Visualization & Content Choices: 
-        1. Bar Chart (Chart.js): Compares max meeting participants across business tiers. Goal: Visually demonstrate the 300-participant limit on M365 Business vs the 500-participant capacity on Google Business Plus.
-        2. Radar Chart (Chart.js): Compares ecosystem strengths (Collaboration, Desktop Apps, Cloud, Security). Goal: Highlight structural differences.
-        3. Interactive Tabs: Organizes complex plan features (Starter/Basic, Standard, Premium/Plus) cleanly.
-        4. Interactive Form: A simple logic-based recommendation tool.
-        All visualizations use Canvas/HTML. No SVG used. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
-<body class="antialiased">
+<body class="antialiased h-screen overflow-hidden flex bg-stone-50">
 
-    <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl">📊</span>
-                <h1 class="text-xl font-bold tracking-tight text-slate-900">Comité de Compras TI</h1>
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="w-72 bg-slate-900 text-stone-300 flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out absolute z-50 h-full md:relative sidebar-closed md:sidebar-open shadow-2xl md:shadow-none">
+        <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">⚡</span>
+                <h1 class="text-lg font-bold text-white leading-tight">Comité TI <br><span class="text-indigo-400 text-sm font-normal">Análisis Estratégico</span></h1>
             </div>
-            <nav class="hidden md:flex space-x-8">
-                <a href="#resumen" class="text-sm font-medium text-stone-600 hover:text-slate-900 transition">Resumen Ejecutivo</a>
-                <a href="#reuniones" class="text-sm font-medium text-stone-600 hover:text-slate-900 transition">Análisis de Reuniones</a>
-                <a href="#planes" class="text-sm font-medium text-stone-600 hover:text-slate-900 transition">Comparativa y Precios</a>
-                <a href="#calculadora" class="text-sm font-medium text-stone-600 hover:text-slate-900 transition">Calculadora</a>
-                <a href="#recomendador" class="text-sm font-medium text-stone-600 hover:text-slate-900 transition">Recomendador</a>
-            </nav>
+            <!-- Mobile close button -->
+            <button onclick="toggleSidebar()" class="md:hidden text-stone-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
         </div>
-    </header>
+        
+        <nav class="flex-1 overflow-y-auto py-6 custom-scrollbar">
+            <ul class="space-y-1 px-3">
+                <li><a href="#resumen" onclick="closeSidebarMobile()" class="block px-4 py-3 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">1. Resumen Ejecutivo</a></li>
+                <li><a href="#ventajas-desventajas" onclick="closeSidebarMobile()" class="block px-4 py-3 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">2. Ventajas y Desventajas</a></li>
+                <li><a href="#inteligencia-artificial" onclick="closeSidebarMobile()" class="block px-4 py-3 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">3. Análisis Profundo de IA</a></li>
+                <li><a href="#servicios-detalle" onclick="closeSidebarMobile()" class="block px-4 py-3 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">4. Desglose de Servicios</a></li>
+                <li><a href="#reuniones" onclick="closeSidebarMobile()" class="block px-4 py-3 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">5. Capacidad de Reuniones</a></li>
+                <li><a href="#calculadora" onclick="closeSidebarMobile()" class="block px-4 py-3 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">6. Calculadora de Precios</a></li>
+                <li><a href="#recomendador" onclick="closeSidebarMobile()" class="block px-4 py-3 rounded-lg hover:bg-indigo-600 text-white transition-colors font-medium mt-4">🎯 Recomendador Interactivo</a></li>
+            </ul>
+        </nav>
+        
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+            Reporte Confidencial v2.0<br>2026
+        </div>
+    </aside>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-16">
+    <!-- Overlay for mobile when sidebar is open -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden transition-opacity"></div>
 
-        <!-- Section: Resumen Ejecutivo -->
-        <section id="resumen" class="bg-white p-8 rounded-2xl shadow-sm border border-stone-200">
-            <h2 class="text-3xl font-bold text-slate-900 mb-4">Resumen Ejecutivo y Recomendación</h2>
-            <p class="text-lg text-stone-600 mb-6 leading-relaxed">
-                Este informe analiza las suites de productividad <strong>Google Workspace</strong> y <strong>Microsoft 365</strong> para determinar la mejor opción basada en sus requerimientos principales: <em>videollamadas con clientes, dominio corporativo personalizado, reuniones de larga duración y capacidad para múltiples integrantes</em>.
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                <div class="bg-green-50 p-6 rounded-xl border border-green-100">
-                    <h3 class="text-xl font-semibold text-green-800 mb-3">✅ Cumplimiento de Requisitos Base</h3>
-                    <ul class="space-y-2 text-green-700">
-                        <li><strong>Dominio Corporativo:</strong> Ambas plataformas incluyen alojamiento de correo profesional (ej. usuario@suempresa.com) desde sus planes más básicos.</li>
-                        <li><strong>Reuniones Largas:</strong> Ambas superan con creces las necesidades diarias. Google Meet permite hasta <strong>24 horas</strong> continuas; Microsoft Teams permite hasta <strong>30 horas</strong>.</li>
-                        <li><strong>Seguridad en Clientes:</strong> Ambas permiten accesos de invitados externos mediante enlaces seguros sin necesidad de que el cliente instale software complejo (acceso web).</li>
-                    </ul>
-                </div>
-                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
-                    <h3 class="text-xl font-semibold text-slate-800 mb-3">💡 El Diferenciador: Cantidad de Participantes</h3>
-                    <p class="text-slate-700 mb-4">
-                        El factor decisivo para su equipo radica en el límite de participantes por reunión en los planes comerciales (Business):
-                    </p>
-                    <ul class="space-y-2 text-slate-700">
-                        <li><strong>Microsoft 365 Business:</strong> Tiene un límite estricto de <strong>300 participantes</strong> en todos sus niveles (Basic, Standard, Premium). Para superar esto, se requiere saltar a planes Enterprise (E3/E5), mucho más costosos.</li>
-                        <li><strong>Google Workspace:</strong> Su plan <em>Business Plus</em> escala hasta <strong>500 participantes</strong>, ofreciendo mayor flexibilidad para asambleas o webinars masivos sin requerir un contrato Enterprise.</li>
-                    </ul>
-                </div>
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden relative transition-all duration-300">
+        
+        <!-- Header / Toggle Bar -->
+        <header class="bg-white shadow-sm h-16 flex items-center px-4 shrink-0 z-30 border-b border-stone-200 justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="p-2 rounded-lg hover:bg-stone-100 text-stone-600 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-900" title="Alternar Menú Lateral">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <h2 class="font-semibold text-slate-800 hidden sm:block">Evaluación de Plataformas en la Nube</h2>
             </div>
-        </section>
-
-        <!-- Section: Análisis de Reuniones (Charts) -->
-        <section id="reuniones">
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-slate-900">Análisis de Capacidad en Videollamadas</h2>
-                <p class="text-stone-600 mt-2">Comparativa visual del límite máximo de participantes simultáneos según el nivel de suscripción comercial.</p>
+            <div class="text-sm font-medium text-stone-500">
+                Workspace vs M365
             </div>
-            
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
-                <div class="chart-container">
-                    <canvas id="participantsChart"></canvas>
-                </div>
-                <div class="mt-6 text-sm text-stone-500 text-center">
-                    *Nota: Microsoft 365 mantiene un límite de 300 en la línea Business. Para llegar a 1000 participantes, Microsoft exige planes Enterprise. Google ofrece 500 en Business Plus.
-                </div>
-            </div>
-        </section>
+        </header>
 
-        <!-- Section: Ecosistemas -->
-        <section id="ecosistemas">
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-slate-900">Fortalezas de cada Ecosistema</h2>
-                <p class="text-stone-600 mt-2">Comprender la filosofía de trabajo de cada plataforma es vital para la adopción de los usuarios finales.</p>
-            </div>
+        <!-- Scrollable Content -->
+        <main class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-8 md:p-12 scroll-smooth">
+            <div class="max-w-5xl mx-auto space-y-24 pb-24">
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Google Card -->
-                <div class="bg-white p-8 rounded-2xl shadow-sm border-t-4 border-t-blue-500 border-x border-b border-stone-200 hover:shadow-md transition">
-                    <div class="text-4xl mb-4">☁️</div>
-                    <h3 class="text-2xl font-bold text-slate-900 mb-2">Google Workspace</h3>
-                    <p class="font-medium text-blue-600 mb-4">Nativo de la Nube & Colaboración Ágil</p>
-                    <ul class="space-y-3 text-stone-700">
-                        <li class="flex items-start gap-2">
-                            <span class="text-green-500 font-bold">✓</span>
-                            <span><strong>Simplicidad:</strong> Interfaz limpia, unificada y fácil de usar. Ideal para equipos que prefieren trabajar exclusivamente desde el navegador.</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-green-500 font-bold">✓</span>
-                            <span><strong>Co-autoría superior:</strong> Google Docs/Sheets están diseñados desde cero para la edición simultánea fluida sin conflictos de versiones.</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-green-500 font-bold">✓</span>
-                            <span><strong>Google Meet:</strong> Extremadamente ligero para los clientes invitados. Entran con un clic sin necesidad de cuentas complejas o descargas pesadas.</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-red-500 font-bold">✗</span>
-                            <span><strong>Aplicaciones de Escritorio:</strong> No ofrece software instalable robusto (como el Excel tradicional), todo depende de la conexión a internet.</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Microsoft Card -->
-                <div class="bg-white p-8 rounded-2xl shadow-sm border-t-4 border-t-indigo-600 border-x border-b border-stone-200 hover:shadow-md transition">
-                    <div class="text-4xl mb-4">💻</div>
-                    <h3 class="text-2xl font-bold text-slate-900 mb-2">Microsoft 365</h3>
-                    <p class="font-medium text-indigo-600 mb-4">Poder de Escritorio & Gobernanza Empresarial</p>
-                    <ul class="space-y-3 text-stone-700">
-                        <li class="flex items-start gap-2">
-                            <span class="text-green-500 font-bold">✓</span>
-                            <span><strong>El Estándar de la Industria:</strong> Excel, Word y PowerPoint en sus versiones de escritorio siguen siendo insuperables en características avanzadas.</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-green-500 font-bold">✓</span>
-                            <span><strong>Microsoft Teams:</strong> Más que videollamadas, es un hub de trabajo complejo que integra chats, archivos, canales y aplicaciones de terceros profundamente.</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-green-500 font-bold">✓</span>
-                            <span><strong>Gestión de Dispositivos (Intune):</strong> En planes Premium, ofrece un control absoluto sobre la seguridad de los equipos físicos de los empleados.</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-red-500 font-bold">✗</span>
-                            <span><strong>Curva de Aprendizaje:</strong> Teams puede resultar abrumador o "pesado" para clientes externos en comparación con la agilidad de un enlace de Meet.</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="mt-8 bg-white p-6 rounded-2xl shadow-sm border border-stone-200 flex justify-center">
-                <div class="chart-container" style="max-width: 500px; height: 350px;">
-                    <canvas id="ecosystemRadar"></canvas>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section: Comparativa de Planes (Interactive) -->
-        <section id="planes">
-            <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-900">Comparativa Técnica y Precios de Planes Business</h2>
-                    <p class="text-stone-600 mt-2">Seleccione el nivel de plan para evaluar los costos oficiales en USD (valores sugeridos antes de impuestos locales).</p>
-                </div>
-                <div class="flex border-b border-stone-300 overflow-x-auto whitespace-nowrap">
-                    <button id="btn-tier-1" class="px-6 py-3 tab-active transition" onclick="switchTier('tier-1')">Nivel Básico</button>
-                    <button id="btn-tier-2" class="px-6 py-3 tab-inactive transition" onclick="switchTier('tier-2')">Nivel Estándar</button>
-                    <button id="btn-tier-3" class="px-6 py-3 tab-inactive transition" onclick="switchTier('tier-3')">Nivel Avanzado</button>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
-                <!-- Tier 1 Content -->
-                <div id="tier-1" class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-stone-200">
-                    <div class="p-8">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-900">Google Workspace Business Starter</h3>
-                                <p class="text-xs text-stone-500 mt-1">Ideal para iniciar con dominio propio</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-2xl font-extrabold text-green-700">$7.00</span>
-                                <span class="text-xs text-stone-500 block">USD usuario/mes (Anual)</span>
-                                <span class="text-xs text-stone-400 block">$8.40 USD (Plan Mensual)</span>
-                            </div>
-                        </div>
-                        <div class="mt-6 space-y-4">
-                            <div class="flex justify-between items-center border-b border-stone-100 pb-2">
-                                <span class="text-stone-600">Almacenamiento por usuario</span>
-                                <span class="font-semibold text-slate-800">30 GB (Compartido)</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-stone-100 pb-2">
-                                <span class="text-stone-600">Límite Videollamada (Meet)</span>
-                                <span class="font-semibold text-slate-800">100 participantes</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-stone-100 pb-2">
-                                <span class="text-stone-600">Grabación de reuniones</span>
-                                <span class="font-semibold text-red-600">No incluido</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-stone-600">Aplicaciones</span>
-                                <span class="font-semibold text-slate-800">Solo Web / Móvil</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-8 bg-slate-50">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-900">Microsoft 365 Empresa Básico</h3>
-                                <p class="text-xs text-stone-500 mt-1">Conectividad ligera en la nube</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-2xl font-extrabold text-blue-700">$6.00</span>
-                                <span class="text-xs text-stone-500 block">USD usuario/mes (Anual)*</span>
-                                <span class="text-xs text-stone-400 block">$7.20 USD (Plan Mensual)</span>
-                            </div>
-                        </div>
-                        <div class="mt-6 space-y-4">
-                            <div class="flex justify-between items-center border-b border-stone-200 pb-2">
-                                <span class="text-stone-600">Almacenamiento por usuario</span>
-                                <span class="font-semibold text-slate-800">1 TB (OneDrive)</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-stone-200 pb-2">
-                                <span class="text-stone-600">Límite Videollamada (Teams)</span>
-                                <span class="font-semibold text-slate-800">300 participantes</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-stone-200 pb-2">
-                                <span class="text-stone-600">Grabación de reuniones</span>
-                                <span class="font-semibold text-green-600">Incluido</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-stone-600">Aplicaciones</span>
-                                <span class="font-semibold text-slate-800">Solo Web / Móvil</span>
-                            </div>
-                        </div>
-                        <p class="text-xs text-stone-400 mt-4">*Nota: Microsoft aplicará un ajuste de precio global en julio 2026, pasando a $7.00 USD/mes.</p>
-                    </div>
-                </div>
-
-                <!-- Tier 2 Content (Hidden by default) -->
-                <div id="tier-2" class="hidden grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-stone-200">
-                    <div class="p-8">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-900">Google Workspace Business Standard</h3>
-                                <p class="text-xs text-stone-500 mt-1">El estándar de colaboración en la nube</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-2xl font-extrabold text-green-700">$14.00</span>
-                                <span class="text-xs text-stone-500 block">USD usuario/mes (Anual)</span>
-                                <span class="text-xs text-stone-400 block">$16.80 USD (Plan Mensual)</span>
-                            </div>
-                        </div>
-                        <div class="mt-6 space-y-4">
-                            <div class="flex justify-between items-center border-b border-stone-100 pb-2">
-                                <span class="text-stone-600">Almacenamiento por usuario</span>
-                                <span class="font-semibold text-slate-800">2 TB (Pool de almacenamiento)</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-stone-100 pb-2">
-                                <span class="text-stone-600">Límite Videollamada (Meet)</span>
-                                <span class="font-semibold text-slate-800">150 participantes</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-stone-100 pb-2">
-                                <span class="text-stone-600">Grabación & Cancelación ruido</span>
-                                <span class="font-semibold text-green-600">Incluido</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-stone-600">Aplicaciones</span>
-                                <span class="font-semibold text-slate-800">Solo Web / Móvil</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-8 bg-slate-50">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-900">Microsoft 365 Empresa Estándar</h3>
-                                <p class="text-xs text-stone-500 mt-1">Productividad total con apps instalables</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-2xl font-extrabold text-blue-700">$12.50</span>
-                                <span class="text-xs text-stone-500 block">USD usuario/mes (Anual)*</span>
-                                <span class="text-xs text-stone-400 block">$15.00 USD (Plan Mensual)</span>
-                            </div>
-                        </div>
-                        <div class="mt-6 space-y-4">
-                            <div class="flex justify-between items-center border-b border-stone-200 pb-2">
-                                <span class="text-stone-600">Almacenamiento por usuario</span>
-                                <span class="font-semibold text-slate-800">1 TB (OneDrive)</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-stone-200 pb-2">
-                                <span class="text-stone-600">Límite Videollamada (Teams)</span>
-                                <span class="font-semibold text-slate-800">300 participantes</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-stone-200 pb-2">
-                                <span class="text-stone-600">Webinars y Registro</span>
-                                <span class="font-semibold text-green-600">Incluido</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-stone-600">Aplicaciones de Escritorio</span>
-                                <span class="font-semibold text-green-600">Word, Excel, PPT (Instalables)</span>
-                            </div>
-                        </div>
-                        <p class="text-xs text-stone-400 mt-4">*Nota: Microsoft aplicará un ajuste de precio global en julio 2026, pasando a $14.00 USD/mes.</p>
-                    </div>
-                </div>
-
-                <!-- Tier 3 Content (Hidden by default) -->
-                <div id="tier-3" class="hidden grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-stone-200">
-                    <div class="p-8">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded font-bold font-mono">RECOMENDADO PARA GRANDES AUDIENCIAS</span>
-                        </div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-900">Google Workspace Business Plus</h3>
-                                <p class="text-xs text-stone-500 mt-1">Capacidad máxima de reunión empresarial</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-2xl font-extrabold text-green-700">$22.00</span>
-                                <span class="text-xs text-stone-500 block">USD usuario/mes (Anual)</span>
-                                <span class="text-xs text-stone-400 block">$26.40 USD (Plan Mensual)</span>
-                            </div>
-                        </div>
-                        <div class="mt-6 space-y-4">
-                            <div class="flex justify-between items-center border-b border-stone-100 pb-2">
-                                <span class="text-stone-600">Almacenamiento por usuario</span>
-                                <span class="font-semibold text-slate-800">5 TB (Pool de almacenamiento)</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-stone-100 pb-2">
-                                <span class="text-stone-600">Límite Videollamada (Meet)</span>
-                                <span class="font-semibold text-indigo-600 text-lg">500 participantes</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-stone-100 pb-2">
-                                <span class="text-stone-600">Seguridad avanzada (Vault)</span>
-                                <span class="font-semibold text-green-600">eDiscovery y Retención</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-stone-600">Control de asistencia</span>
-                                <span class="font-semibold text-green-600">Incluido en Meet</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-8 bg-slate-50">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-900">Microsoft 365 Empresa Premium</h3>
-                                <p class="text-xs text-stone-500 mt-1">Ciberseguridad y gestión avanzada de PCs</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-2xl font-extrabold text-blue-700">$22.00</span>
-                                <span class="text-xs text-stone-500 block">USD usuario/mes (Anual)</span>
-                                <span class="text-xs text-stone-400 block">$26.40 USD (Plan Mensual)</span>
-                            </div>
-                        </div>
-                        <div class="mt-6 space-y-4">
-                            <div class="flex justify-between items-center border-b border-stone-200 pb-2">
-                                <span class="text-stone-600">Almacenamiento por usuario</span>
-                                <span class="font-semibold text-slate-800">1 TB (OneDrive)</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-stone-200 pb-2">
-                                <span class="text-stone-600">Límite Videollamada (Teams)</span>
-                                <span class="font-semibold text-slate-800">300 participantes</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-stone-200 pb-2">
-                                <span class="text-stone-600">Ciberseguridad Avanzada</span>
-                                <span class="font-semibold text-green-600">Defender for Business</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-stone-600">Gestión de Dispositivos</span>
-                                <span class="font-semibold text-green-600">Intune incluido</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section: Calculadora de Presupuesto -->
-        <section id="calculadora" class="bg-white p-8 rounded-2xl shadow-sm border border-stone-200">
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-slate-900">🧮 Calculadora de Presupuesto Estimado</h2>
-                <p class="text-stone-600 mt-2">Compare el costo total proyectado mensualmente y anualmente según el número de colaboradores de su empresa.</p>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Controls -->
-                <div class="bg-stone-50 p-6 rounded-xl border border-stone-200 space-y-6">
-                    <div>
-                        <label for="usersCount" class="block text-sm font-semibold text-slate-700 mb-2">Cantidad de Usuarios / Licencias:</label>
-                        <input type="number" id="usersCount" value="15" min="1" max="300" oninput="updateCalculatorBudget()" class="w-full px-4 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-slate-900">
-                        <span class="text-xs text-stone-500 mt-1 block">Límite de la línea Business: 300 usuarios.</span>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Compromiso / Tipo de Pago:</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center gap-2 cursor-pointer text-sm">
-                                <input type="radio" name="calcCommitment" value="annual" checked onchange="updateCalculatorBudget()" class="text-slate-900 focus:ring-slate-900">
-                                <span>Contrato Anual (Facturado Mensual)</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer text-sm">
-                                <input type="radio" name="calcCommitment" value="monthly" onchange="updateCalculatorBudget()" class="text-slate-900 focus:ring-slate-900">
-                                <span>Flexibilidad Mensual (Sin compromiso)</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label for="calcExchangeRate" class="block text-sm font-semibold text-slate-700 mb-2">Tasa de Cambio Estimada (1 USD a COP):</label>
-                        <input type="number" id="calcExchangeRate" value="4000" min="1000" max="6000" oninput="updateCalculatorBudget()" class="w-full px-4 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-slate-900">
-                    </div>
-                </div>
-
-                <!-- Outputs / Visual breakdown -->
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Nivel Básico Card -->
-                        <div class="p-5 rounded-xl border border-stone-200 bg-white shadow-sm flex flex-col justify-between">
-                            <h4 class="font-bold text-slate-800 border-b border-stone-100 pb-2 text-sm">Nivel Básico</h4>
-                            <div class="my-4 space-y-3">
-                                <div>
-                                    <span class="text-xs text-stone-500 block">Google Starter:</span>
-                                    <span id="starterCost" class="text-base font-bold text-green-700">$0 USD</span>
-                                    <span id="starterCostCOP" class="text-xs text-stone-400 block">$0 COP</span>
+                <!-- Section 1: Resumen Ejecutivo -->
+                <section id="resumen" class="scroll-mt-24">
+                    <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-stone-200">
+                        <span class="text-indigo-600 font-semibold tracking-wider text-sm uppercase mb-2 block">Sección 1</span>
+                        <h2 class="text-4xl font-extrabold text-slate-900 mb-6">Resumen Ejecutivo de Adquisición</h2>
+                        <div class="prose prose-stone max-w-none prose-lg">
+                            <p class="leading-relaxed">
+                                La elección entre <strong>Google Workspace</strong> y <strong>Microsoft 365</strong> define la cultura operativa de la organización. Este informe exhaustivo desglosa cada componente para fundamentar la decisión de compra, con especial énfasis en sus tres requisitos innegociables:
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 not-prose">
+                                <div class="bg-stone-50 p-6 rounded-2xl border border-stone-100">
+                                    <div class="text-2xl mb-3">🌐</div>
+                                    <h4 class="font-bold text-slate-900 mb-2">Identidad Corporativa</h4>
+                                    <p class="text-sm text-stone-600">Ambas suites permiten correos personalizados con su dominio desde los planes más básicos, garantizando presencia profesional.</p>
                                 </div>
-                                <div>
-                                    <span class="text-xs text-stone-500 block">Microsoft Básico:</span>
-                                    <span id="basicCost" class="text-base font-bold text-blue-700">$0 USD</span>
-                                    <span id="basicCostCOP" class="text-xs text-stone-400 block">$0 COP</span>
+                                <div class="bg-stone-50 p-6 rounded-2xl border border-stone-100">
+                                    <div class="text-2xl mb-3">⏱️</div>
+                                    <h4 class="font-bold text-slate-900 mb-2">Reuniones de Alta Duración</h4>
+                                    <p class="text-sm text-stone-600">No hay limitantes de tiempo restrictivos. Google Meet ofrece hasta 24 horas y MS Teams hasta 30 horas continuas por sesión.</p>
+                                </div>
+                                <div class="bg-stone-50 p-6 rounded-2xl border border-stone-100">
+                                    <div class="text-2xl mb-3">👥</div>
+                                    <h4 class="font-bold text-slate-900 mb-2">Capacidad Masiva</h4>
+                                    <p class="text-sm text-stone-600">El diferenciador clave: Google escala hasta <strong>500 participantes</strong> en planes comerciales, mientras Microsoft topa en <strong>300</strong>.</p>
                                 </div>
                             </div>
-                            <div class="bg-stone-50 p-2 rounded text-center text-xs text-slate-600 font-medium" id="tier1Savings">
-                                -
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section 2: Ventajas y Desventajas -->
+                <section id="ventajas-desventajas" class="scroll-mt-24">
+                    <span class="text-indigo-600 font-semibold tracking-wider text-sm uppercase mb-2 block">Sección 2</span>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-8">Análisis de Ventajas y Desventajas</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Google Pros/Cons -->
+                        <div class="bg-white rounded-3xl shadow-sm border border-stone-200 overflow-hidden">
+                            <div class="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-white">
+                                <h3 class="text-2xl font-bold flex items-center gap-3">
+                                    <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor"><path d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12C5,7.9 8.2,4.73 12.2,4.73C15.29,4.73 17.1,6.7 17.1,6.7L19,4.72C19,4.72 16.56,2 12.1,2C6.42,2 2.03,6.8 2.03,12C2.03,17.05 6.16,22 12.25,22C17.6,22 21.5,18.33 21.5,12.91C21.5,11.76 21.35,11.1 21.35,11.1Z"/></svg>
+                                    Google Workspace
+                                </h3>
+                                <p class="text-green-50 mt-1 opacity-90">Cultura de inmediatez y nube pura.</p>
+                            </div>
+                            <div class="p-8 space-y-8">
+                                <div>
+                                    <h4 class="text-lg font-bold text-slate-900 border-b border-stone-100 pb-2 mb-4 flex items-center gap-2"><span class="text-green-500">➕</span> Principales Fortalezas</h4>
+                                    <ul class="space-y-3 text-stone-700 text-sm">
+                                        <li><strong>Fricción Cero en Reuniones:</strong> Meet corre en el navegador de los clientes al instante. No pide instalación, no pide cuentas forzosas. Entrar a una reunión es inmediato.</li>
+                                        <li><strong>Co-autoría Insuperable:</strong> Varias personas pueden editar Docs y Sheets al mismo tiempo sin que se bloquee el documento o se generen versiones conflictivas.</li>
+                                        <li><strong>Simplicidad de Adopción:</strong> Interfaz limpia e intuitiva. Reduce drásticamente los tickets de soporte de TI relacionados con "cómo usar" el correo o la nube.</li>
+                                        <li><strong>Búsqueda Poderosa:</strong> Al ser de Google, el motor de búsqueda interno para encontrar correos y archivos (Cloud Search) es extremadamente rápido y preciso.</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-slate-900 border-b border-stone-100 pb-2 mb-4 flex items-center gap-2"><span class="text-red-500">➖</span> Puntos Débiles</h4>
+                                    <ul class="space-y-3 text-stone-700 text-sm">
+                                        <li><strong>Ausencia de Apps de Escritorio:</strong> Todo es vía web. Aunque hay modo offline, los usuarios financieros extrañarán la robustez del programa Excel instalado localmente.</li>
+                                        <li><strong>Formato de Archivos:</strong> Aunque abre archivos de Office (.docx, .xlsx), a veces la conversión de macros complejas o formatos muy específicos de PowerPoint no es perfecta al pasarlo a Google Slides/Sheets.</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Nivel Estándar Card -->
-                        <div class="p-5 rounded-xl border border-stone-200 bg-white shadow-sm flex flex-col justify-between">
-                            <h4 class="font-bold text-slate-800 border-b border-stone-100 pb-2 text-sm">Nivel Estándar</h4>
-                            <div class="my-4 space-y-3">
-                                <div>
-                                    <span class="text-xs text-stone-500 block">Google Standard:</span>
-                                    <span id="standardGoogleCost" class="text-base font-bold text-green-700">$0 USD</span>
-                                    <span id="standardGoogleCostCOP" class="text-xs text-stone-400 block">$0 COP</span>
-                                </div>
-                                <div>
-                                    <span class="text-xs text-stone-500 block">Microsoft Estándar:</span>
-                                    <span id="standardMSCost" class="text-base font-bold text-blue-700">$0 USD</span>
-                                    <span id="standardMSCostCOP" class="text-xs text-stone-400 block">$0 COP</span>
-                                </div>
+                        <!-- Microsoft Pros/Cons -->
+                        <div class="bg-white rounded-3xl shadow-sm border border-stone-200 overflow-hidden">
+                            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
+                                <h3 class="text-2xl font-bold flex items-center gap-3">
+                                    <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor"><path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zm12.6 0H12.6V0H24v11.4z"/></svg>
+                                    Microsoft 365
+                                </h3>
+                                <p class="text-blue-50 mt-1 opacity-90">Poder tradicional y ecosistema completo.</p>
                             </div>
-                            <div class="bg-stone-50 p-2 rounded text-center text-xs text-slate-600 font-medium" id="tier2Savings">
-                                -
-                            </div>
-                        </div>
-
-                        <!-- Nivel Avanzado Card -->
-                        <div class="p-5 rounded-xl border border-stone-200 bg-white shadow-sm flex flex-col justify-between">
-                            <h4 class="font-bold text-slate-800 border-b border-stone-100 pb-2 text-sm">Nivel Avanzado</h4>
-                            <div class="my-4 space-y-3">
+                            <div class="p-8 space-y-8">
                                 <div>
-                                    <span class="text-xs text-stone-500 block">Google Plus:</span>
-                                    <span id="plusGoogleCost" class="text-base font-bold text-green-700">$0 USD</span>
-                                    <span id="plusGoogleCostCOP" class="text-xs text-stone-400 block">$0 COP</span>
+                                    <h4 class="text-lg font-bold text-slate-900 border-b border-stone-100 pb-2 mb-4 flex items-center gap-2"><span class="text-blue-500">➕</span> Principales Fortalezas</h4>
+                                    <ul class="space-y-3 text-stone-700 text-sm">
+                                        <li><strong>El Estándar de la Industria:</strong> Excel, Word y PowerPoint de escritorio son inigualables en funciones avanzadas, macros y análisis de datos pesados.</li>
+                                        <li><strong>Hub Central (Teams):</strong> Teams no es solo para videollamadas; centraliza chats departamentales, integración de archivos de SharePoint y cientos de apps de terceros en un solo programa.</li>
+                                        <li><strong>Gobernanza y Seguridad (Intune):</strong> En planes superiores, TI tiene control absoluto de los PCs Windows físicos de la empresa (bloqueo, borrado remoto, políticas).</li>
+                                    </ul>
                                 </div>
                                 <div>
-                                    <span class="text-xs text-stone-500 block">Microsoft Premium:</span>
-                                    <span id="premiumMSCost" class="text-base font-bold text-blue-700">$0 USD</span>
-                                    <span id="premiumMSCostCOP" class="text-xs text-stone-400 block">$0 COP</span>
+                                    <h4 class="text-lg font-bold text-slate-900 border-b border-stone-100 pb-2 mb-4 flex items-center gap-2"><span class="text-red-500">➖</span> Puntos Débiles</h4>
+                                    <ul class="space-y-3 text-stone-700 text-sm">
+                                        <li><strong>Curva de Aprendizaje y "Peso":</strong> El ecosistema puede ser abrumador. Teams consume muchos recursos de RAM en las computadoras y la gestión de permisos en SharePoint es compleja.</li>
+                                        <li><strong>Fricción con Invitados:</strong> Entrar a una reunión de Teams desde fuera de la empresa suele ser más engorroso para los clientes (a veces les pide descargar la app o iniciar sesión con cuentas de Microsoft).</li>
+                                        <li><strong>Límite de Participantes:</strong> Topado estrictamente a 300 personas en toda la línea Business. Obliga a saltar a licencias Enterprise costosas para asambleas masivas.</li>
+                                    </ul>
                                 </div>
-                            </div>
-                            <div class="bg-stone-50 p-2 rounded text-center text-xs text-slate-600 font-medium" id="tier3Savings">
-                                -
                             </div>
                         </div>
                     </div>
+                </section>
 
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-stone-500 leading-relaxed">
-                        ⚠️ <strong>Información importante de facturación:</strong> Los cálculos de arriba representan valores mensuales de referencia basados en los precios vigentes. El precio anual final resulta de multiplicar estas cifras por 12 meses. Microsoft 365 requiere facturación formal anual en la mayoría de distribuidores para acceder a la tarifa base reducida.
+                <!-- Section 3: Inteligencia Artificial Profunda -->
+                <section id="inteligencia-artificial" class="scroll-mt-24">
+                    <span class="text-indigo-600 font-semibold tracking-wider text-sm uppercase mb-2 block">Sección 3</span>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-4">Análisis Profundo de Inteligencia Artificial</h2>
+                    <p class="text-lg text-stone-600 mb-10 leading-relaxed max-w-3xl">La IA ya no es un "extra", es el motor principal de productividad. Así es como ambas plataformas integran sus modelos generativos cuidando la privacidad de los datos corporativos.</p>
+
+                    <div class="space-y-12">
+                        <!-- AI: Google -->
+                        <div class="bg-gradient-to-br from-white to-green-50/30 p-8 md:p-12 rounded-3xl shadow-sm border border-stone-200">
+                            <div class="flex items-center gap-4 mb-8">
+                                <span class="p-4 bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 text-white rounded-2xl shadow-lg text-2xl">✨</span>
+                                <div>
+                                    <h3 class="text-3xl font-bold text-slate-900">Ecosistema Google AI (Gemini & NotebookLM)</h3>
+                                    <p class="text-stone-500 font-medium">Investigación ágil y generación de contenido fluido.</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                <div class="space-y-6">
+                                    <div class="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm">
+                                        <h4 class="font-bold text-lg text-slate-900 mb-3 flex items-center gap-2">
+                                            <span class="text-2xl">📚</span> NotebookLM (El Diferenciador)
+                                        </h4>
+                                        <p class="text-stone-600 text-sm leading-relaxed mb-4">
+                                            Una de las herramientas más revolucionarias incluidas en Workspace (Standard/Plus) con privacidad corporativa. Permite cargar hasta 50 fuentes (PDFs masivos, URLs, Google Docs, videos de YouTube) en una libreta privada.
+                                        </p>
+                                        <ul class="text-sm text-stone-600 space-y-2 list-disc list-inside">
+                                            <li><strong>Audio Overviews:</strong> Convierte decenas de PDFs en un podcast (audio conversacional a dos voces) que discute y explica tu información corporativa.</li>
+                                            <li><strong>Citas precisas:</strong> Nunca alucina; cada respuesta que da te muestra exactamente en qué párrafo de tu PDF se basó.</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm">
+                                        <h4 class="font-bold text-lg text-slate-900 mb-3 flex items-center gap-2">
+                                            <span class="text-2xl">🎥</span> Google Vids (Novedad)
+                                        </h4>
+                                        <p class="text-stone-600 text-sm leading-relaxed">
+                                            Una nueva app integrada que permite crear videos corporativos impulsados por IA generativa. Genera storyboards automáticos basados en un documento, incluye voces en off generadas por IA y plantillas dinámicas, todo directamente desde el navegador.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-6">
+                                    <div class="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm">
+                                        <h4 class="font-bold text-lg text-slate-900 mb-3 flex items-center gap-2">
+                                            <span class="text-2xl">✍️</span> Gemini Integrado (Help Me Write)
+                                        </h4>
+                                        <p class="text-stone-600 text-sm leading-relaxed">
+                                            La asistencia de redacción está profundamente incrustada. En Gmail, puede resumir hilos largos de correo y redactar respuestas perfectas. En Google Meet, traduce subtítulos en tiempo real y ofrece iluminación de estudio/fondos generativos. (Nota: El acceso a la creación de tablas automáticas y edición avanzada requiere el add-on Gemini for Workspace).
+                                        </p>
+                                    </div>
+
+                                    <div class="bg-stone-800 p-6 rounded-2xl text-stone-200">
+                                        <h4 class="font-bold text-white mb-2 flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                            Privacidad de Datos
+                                        </h4>
+                                        <p class="text-sm">
+                                            Google garantiza que tus interacciones con la IA dentro de Workspace no se utilizan para entrenar los modelos públicos de Gemini. Tus secretos comerciales permanecen en tu instancia.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI: Microsoft -->
+                        <div class="bg-gradient-to-br from-white to-blue-50/30 p-8 md:p-12 rounded-3xl shadow-sm border border-stone-200">
+                            <div class="flex items-center gap-4 mb-8">
+                                <span class="p-4 bg-indigo-600 text-white rounded-2xl shadow-lg text-2xl">🤖</span>
+                                <div>
+                                    <h3 class="text-3xl font-bold text-slate-900">Ecosistema Microsoft Copilot</h3>
+                                    <p class="text-stone-500 font-medium">Automatización profunda en herramientas tradicionales.</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                <div class="space-y-6">
+                                    <div class="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm">
+                                        <h4 class="font-bold text-lg text-slate-900 mb-3 flex items-center gap-2">
+                                            <span class="text-2xl">📊</span> Copilot en Excel & PowerPoint
+                                        </h4>
+                                        <p class="text-stone-600 text-sm leading-relaxed mb-4">
+                                            Es el sueño de cualquier analista financiero. Le puedes decir a Excel en lenguaje natural: <em>"Analiza estos datos de ventas, resalta las tendencias de Q3 y genera un gráfico predictivo"</em> y lo hace en segundos.
+                                        </p>
+                                        <p class="text-stone-600 text-sm leading-relaxed">
+                                            En PowerPoint, transforma un aburrido documento de Word (ej. un plan de negocios) en una presentación de diapositivas completa con imágenes, transiciones y notas del orador.
+                                        </p>
+                                    </div>
+
+                                    <div class="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm">
+                                        <h4 class="font-bold text-lg text-slate-900 mb-3 flex items-center gap-2">
+                                            <span class="text-2xl">👔</span> Resúmenes Inteligentes (Teams)
+                                        </h4>
+                                        <p class="text-stone-600 text-sm leading-relaxed">
+                                            Si llegas tarde a una reunión de Teams, puedes preguntarle a Copilot <em>"¿Qué me he perdido?"</em> y te resume lo discutido hasta el momento. Al finalizar, genera automáticamente minutas, decisiones clave y tareas asignadas a cada miembro.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-6">
+                                    <div class="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm">
+                                        <h4 class="font-bold text-lg text-slate-900 mb-3 flex items-center gap-2">
+                                            <span class="text-2xl">🛠️</span> Copilot Studio (Creación de Agentes)
+                                        </h4>
+                                        <p class="text-stone-600 text-sm leading-relaxed">
+                                            Permite a las empresas (a través de licenciamiento M365 Copilot) crear sus propios "agentes" o bots de IA personalizados. Estos agentes pueden conectarse a la base de datos de recursos humanos o CRM de la empresa y automatizar flujos de trabajo internos enteros.
+                                        </p>
+                                    </div>
+
+                                    <div class="bg-slate-800 p-6 rounded-2xl text-stone-200">
+                                        <h4 class="font-bold text-white mb-2 flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                                            Microsoft Graph Security
+                                        </h4>
+                                        <p class="text-sm">
+                                            Basado en Azure, Copilot hereda todas las políticas de seguridad de la organización. Un usuario no puede pedirle a Copilot información de un documento para el cual no tiene permisos de acceso en SharePoint.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </section>
+
+                <!-- Section 4: Desglose de Servicios por Plan -->
+                <section id="servicios-detalle" class="scroll-mt-24">
+                    <span class="text-indigo-600 font-semibold tracking-wider text-sm uppercase mb-2 block">Sección 4</span>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-8">Desglose Técnico de Servicios por Nivel</h2>
+
+                    <!-- Level Tabs -->
+                    <div class="flex border-b border-stone-300 overflow-x-auto custom-scrollbar whitespace-nowrap mb-8">
+                        <button id="btn-tier-1" class="px-8 py-4 text-slate-900 border-b-2 border-slate-900 font-bold transition" onclick="switchTier('tier-1')">Nivel Básico (Starter / Basic)</button>
+                        <button id="btn-tier-2" class="px-8 py-4 text-stone-500 border-b-2 border-transparent hover:text-slate-700 transition" onclick="switchTier('tier-2')">Nivel Estándar</button>
+                        <button id="btn-tier-3" class="px-8 py-4 text-stone-500 border-b-2 border-transparent hover:text-slate-700 transition" onclick="switchTier('tier-3')">Nivel Avanzado (Plus / Premium)</button>
+                    </div>
+
+                    <div class="bg-white rounded-3xl shadow-sm border border-stone-200 overflow-hidden">
+                        <!-- TIER 1 -->
+                        <div id="tier-1" class="tier-content animate-fade-in">
+                            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-stone-200">
+                                <!-- Google Starter -->
+                                <div class="p-8 md:p-10">
+                                    <h3 class="text-2xl font-bold text-slate-900 flex items-center gap-2 mb-6">
+                                        <span class="text-green-500">G</span> Workspace Business Starter
+                                    </h3>
+                                    <div class="space-y-6">
+                                        <div class="flex flex-col border-b border-stone-100 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Comunicación</span>
+                                            <span class="text-slate-800"><strong>Gmail</strong> corporativo, <strong>Meet</strong> (Llamadas de 100 participantes, sin grabación), <strong>Chat</strong> integrado.</span>
+                                        </div>
+                                        <div class="flex flex-col border-b border-stone-100 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Almacenamiento</span>
+                                            <span class="text-slate-800"><strong>30 GB</strong> por usuario (Compartido entre Drive y Gmail).</span>
+                                        </div>
+                                        <div class="flex flex-col border-b border-stone-100 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Ofimática y Colaboración</span>
+                                            <span class="text-slate-800">Docs, Sheets, Slides, Forms, Sites (Uso exclusivo en Navegador Web o App móvil).</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Capacidad IA</span>
+                                            <span class="text-slate-800">Acceso a Gemini de nivel base. (NotebookLM no incluido con protección corporativa total en este nivel).</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- MS Basic -->
+                                <div class="p-8 md:p-10 bg-slate-50/50">
+                                    <h3 class="text-2xl font-bold text-slate-900 flex items-center gap-2 mb-6">
+                                        <span class="text-blue-500">M</span> 365 Empresa Básico
+                                    </h3>
+                                    <div class="space-y-6">
+                                        <div class="flex flex-col border-b border-stone-200 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Comunicación</span>
+                                            <span class="text-slate-800"><strong>Exchange/Outlook</strong> (50GB buzón), <strong>Teams</strong> (Llamadas de 300 participantes, grabación incluida).</span>
+                                        </div>
+                                        <div class="flex flex-col border-b border-stone-200 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Almacenamiento</span>
+                                            <span class="text-slate-800"><strong>1 TB</strong> en OneDrive por usuario + Almacenamiento en SharePoint.</span>
+                                        </div>
+                                        <div class="flex flex-col border-b border-stone-200 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Ofimática y Colaboración</span>
+                                            <span class="text-slate-800">Word, Excel, PowerPoint (Uso exclusivo <strong>Versión Web y Móvil</strong>. Sin instalación local de escritorio).</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Capacidad IA</span>
+                                            <span class="text-slate-800">Copilot Web (chat). Copilot en apps requiere add-on de pago adicional.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TIER 2 -->
+                        <div id="tier-2" class="tier-content hidden animate-fade-in">
+                            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-stone-200">
+                                <!-- Google Standard -->
+                                <div class="p-8 md:p-10">
+                                    <h3 class="text-2xl font-bold text-slate-900 flex items-center gap-2 mb-6">
+                                        <span class="text-green-500">G</span> Workspace Business Standard
+                                    </h3>
+                                    <div class="space-y-6">
+                                        <div class="flex flex-col border-b border-stone-100 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Comunicación</span>
+                                            <span class="text-slate-800"><strong>Meet Avanzado:</strong> 150 participantes, Grabación en Drive, Cancelación de ruido, Salas separadas (Breakout rooms).</span>
+                                        </div>
+                                        <div class="flex flex-col border-b border-stone-100 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Almacenamiento</span>
+                                            <span class="text-slate-800"><strong>2 TB</strong> de almacenamiento agrupado (pooled) por usuario. Shared Drives para equipos.</span>
+                                        </div>
+                                        <div class="flex flex-col border-b border-stone-100 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Administración</span>
+                                            <span class="text-slate-800">Controles de seguridad estándar, gestión de puntos de conexión básica. Permite aprobaciones de documentos en Drive.</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1 text-indigo-600">Capacidad IA (Diferenciador)</span>
+                                            <span class="text-slate-800"><strong>NotebookLM con privacidad empresarial</strong>, y generación limitada de Audio Overviews.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- MS Standard -->
+                                <div class="p-8 md:p-10 bg-slate-50/50">
+                                    <h3 class="text-2xl font-bold text-slate-900 flex items-center gap-2 mb-6">
+                                        <span class="text-blue-500">M</span> 365 Empresa Estándar
+                                    </h3>
+                                    <div class="space-y-6">
+                                        <div class="flex flex-col border-b border-stone-200 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Comunicación</span>
+                                            <span class="text-slate-800"><strong>Teams Completo:</strong> 300 participantes, Webinars, Registro de asistentes e informes analíticos de reuniones.</span>
+                                        </div>
+                                        <div class="flex flex-col border-b border-stone-200 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Almacenamiento</span>
+                                            <span class="text-slate-800"><strong>1 TB</strong> OneDrive por usuario + SharePoint (sitios de intranet corporativa).</span>
+                                        </div>
+                                        <div class="flex flex-col border-b border-stone-200 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1 text-indigo-600">Ofimática (Diferenciador)</span>
+                                            <span class="text-slate-800"><strong>Aplicaciones de Escritorio Instalables:</strong> Word, Excel, PowerPoint, Access (solo PC), Publisher. Totalmente funcionales offline con soporte para Macros avanzadas.</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Capacidad IA</span>
+                                            <span class="text-slate-800">Preparado para el add-on de Copilot M365 para apps de escritorio (Costo adicional).</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TIER 3 -->
+                        <div id="tier-3" class="tier-content hidden animate-fade-in">
+                            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-stone-200">
+                                <!-- Google Plus -->
+                                <div class="p-8 md:p-10">
+                                    <span class="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-md font-bold uppercase tracking-wider mb-3">Escalabilidad de Reuniones</span>
+                                    <h3 class="text-2xl font-bold text-slate-900 flex items-center gap-2 mb-6">
+                                        <span class="text-green-500">G</span> Workspace Business Plus
+                                    </h3>
+                                    <div class="space-y-6">
+                                        <div class="flex flex-col border-b border-stone-100 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1 text-indigo-600">Comunicación Masiva</span>
+                                            <span class="text-slate-800"><strong>Meet de Gran Capacidad:</strong> Hasta <strong>500 participantes</strong> simultáneos, seguimiento de asistencia automático.</span>
+                                        </div>
+                                        <div class="flex flex-col border-b border-stone-100 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Almacenamiento y Cumplimiento</span>
+                                            <span class="text-slate-800"><strong>5 TB</strong> por usuario. Incluye <strong>Google Vault</strong> (Retención de datos, auditorías legales y eDiscovery para correos y chats borrados).</span>
+                                        </div>
+                                        <div class="flex flex-col border-b border-stone-100 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Seguridad</span>
+                                            <span class="text-slate-800">Gestión de puntos de conexión avanzada (limpiar dispositivos perdidos remotamente, forzar contraseñas fuertes).</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Capacidad IA</span>
+                                            <span class="text-slate-800">Límites incrementados para NotebookLM, generación masiva de contenido e integración más rápida.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- MS Premium -->
+                                <div class="p-8 md:p-10 bg-slate-50/50">
+                                    <span class="inline-block bg-slate-800 text-white text-xs px-2 py-1 rounded-md font-bold uppercase tracking-wider mb-3">Máxima Ciberseguridad</span>
+                                    <h3 class="text-2xl font-bold text-slate-900 flex items-center gap-2 mb-6">
+                                        <span class="text-blue-500">M</span> 365 Empresa Premium
+                                    </h3>
+                                    <div class="space-y-6">
+                                        <div class="flex flex-col border-b border-stone-200 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Comunicación & Almacenamiento</span>
+                                            <span class="text-slate-800">Mantiene las capacidades del Estándar (1TB OneDrive, Apps de Escritorio instalables, Teams limitado a 300 participantes).</span>
+                                        </div>
+                                        <div class="flex flex-col border-b border-stone-200 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1 text-indigo-600">Gobernanza TI (Diferenciador)</span>
+                                            <span class="text-slate-800"><strong>Microsoft Intune:</strong> Gestión absoluta de dispositivos. Autopilot para preconfigurar PCs nuevos antes de entregarlos al empleado. Bloqueo de apps en celulares corporativos.</span>
+                                        </div>
+                                        <div class="flex flex-col border-b border-stone-200 pb-4">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Protección Anti-Amenazas</span>
+                                            <span class="text-slate-800"><strong>Defender for Business:</strong> Protección contra ransomware líder en la industria, protección contra phishing y enlaces maliciosos de nivel Enterprise.</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Capacidad IA</span>
+                                            <span class="text-slate-800">Capacidades de IA aplicadas a la detección de seguridad. Add-on de Copilot aplica con políticas de Intune estables.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section 5: Capacidad de Reuniones (Gráficos) -->
+                <section id="reuniones" class="scroll-mt-24">
+                    <span class="text-indigo-600 font-semibold tracking-wider text-sm uppercase mb-2 block">Sección 5</span>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-8">Análisis Comparativo de Capacidad</h2>
+                    
+                    <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-stone-200">
+                        <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-stone-100 pb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800">Participantes Simultáneos por Videollamada</h3>
+                                <p class="text-sm text-stone-500 mt-1">Límites estrictos dentro de las licencias comerciales (Business).</p>
+                            </div>
+                            <div class="bg-amber-50 text-amber-800 text-xs px-3 py-2 rounded-lg border border-amber-200 max-w-sm">
+                                <strong>Advertencia de escalabilidad:</strong> Para que Microsoft Teams soporte más de 300 usuarios, la empresa <em>debe</em> adquirir licencias Enterprise (E3/E5), las cuales cambian radicalmente la estructura de costos.
+                            </div>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <canvas id="participantsChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section 6: Calculadora -->
+                <section id="calculadora" class="scroll-mt-24">
+                    <span class="text-indigo-600 font-semibold tracking-wider text-sm uppercase mb-2 block">Sección 6</span>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-8">Calculadora de Presupuesto Base</h2>
+                    
+                    <div class="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-stone-200">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                            <!-- Input Controls -->
+                            <div class="bg-stone-50 p-8 rounded-2xl border border-stone-200 space-y-8">
+                                <div>
+                                    <label for="usersCount" class="block font-bold text-slate-900 mb-2">Total de Usuarios (Licencias):</label>
+                                    <input type="number" id="usersCount" value="15" min="1" max="300" oninput="updateCalculatorBudget()" class="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-lg">
+                                    <span class="text-xs text-stone-500 mt-2 block">Máximo 300 usuarios para planes Business de MS.</span>
+                                </div>
+
+                                <div>
+                                    <label class="block font-bold text-slate-900 mb-3">Ciclo de Facturación:</label>
+                                    <div class="space-y-3 bg-white p-4 rounded-xl border border-stone-200">
+                                        <label class="flex items-center gap-3 cursor-pointer">
+                                            <input type="radio" name="calcCommitment" value="annual" checked onchange="updateCalculatorBudget()" class="w-4 h-4 text-slate-900 focus:ring-slate-900">
+                                            <span class="text-sm font-medium">Contrato Anual (Mejor precio)</span>
+                                        </label>
+                                        <label class="flex items-center gap-3 cursor-pointer">
+                                            <input type="radio" name="calcCommitment" value="monthly" onchange="updateCalculatorBudget()" class="w-4 h-4 text-slate-900 focus:ring-slate-900">
+                                            <span class="text-sm font-medium">Contrato Mensual Flexible</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="calcExchangeRate" class="block font-bold text-slate-900 mb-2">Tasa de Cambio (USD a COP):</label>
+                                    <input type="number" id="calcExchangeRate" value="4000" min="1000" max="6000" oninput="updateCalculatorBudget()" class="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-lg">
+                                </div>
+                            </div>
+
+                            <!-- Outputs -->
+                            <div class="lg:col-span-2 space-y-6">
+                                <!-- Standard Card (Most Common) -->
+                                <div class="p-6 rounded-2xl border-2 border-indigo-100 bg-indigo-50/20 flex flex-col justify-between">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h4 class="font-bold text-slate-900 text-lg">Comparativa: Nivel Estándar</h4>
+                                        <span class="text-xs font-semibold bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">El más adquirido</span>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4 mb-4">
+                                        <div class="bg-white p-4 rounded-xl border border-stone-200 shadow-sm">
+                                            <span class="text-sm text-stone-500 font-medium block mb-1">Google Workspace Standard</span>
+                                            <span id="standardGoogleCost" class="text-2xl font-black text-green-600 block">$0 USD</span>
+                                            <span id="standardGoogleCostCOP" class="text-sm text-stone-400 block mt-1">$0 COP / mes total</span>
+                                        </div>
+                                        <div class="bg-white p-4 rounded-xl border border-stone-200 shadow-sm">
+                                            <span class="text-sm text-stone-500 font-medium block mb-1">Microsoft 365 Estándar</span>
+                                            <span id="standardMSCost" class="text-2xl font-black text-blue-600 block">$0 USD</span>
+                                            <span id="standardMSCostCOP" class="text-sm text-stone-400 block mt-1">$0 COP / mes total</span>
+                                        </div>
+                                    </div>
+                                    <div class="bg-white p-3 rounded-xl border border-stone-200 text-center text-sm font-medium shadow-sm" id="tier2Savings">-</div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Basic Card -->
+                                    <div class="p-5 rounded-2xl border border-stone-200 bg-white flex flex-col justify-between">
+                                        <h4 class="font-bold text-slate-800 border-b border-stone-100 pb-2 text-sm mb-4">Nivel Básico (Solo Web)</h4>
+                                        <div class="space-y-4 mb-4">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm text-stone-600">Workspace Starter:</span>
+                                                    <span id="starterCostCOP" class="text-xs text-stone-400 mt-1">$0 COP</span>
+                                                </div>
+                                                <span id="starterCost" class="text-base font-bold text-slate-900">$0 USD</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm text-stone-600">M365 Básico:</span>
+                                                    <span id="basicCostCOP" class="text-xs text-stone-400 mt-1">$0 COP</span>
+                                                </div>
+                                                <span id="basicCost" class="text-base font-bold text-slate-900">$0 USD</span>
+                                            </div>
+                                        </div>
+                                        <div class="bg-stone-50 p-2 rounded-lg text-center text-xs text-slate-600 font-medium" id="tier1Savings">-</div>
+                                    </div>
+
+                                    <!-- Plus/Premium Card -->
+                                    <div class="p-5 rounded-2xl border border-stone-200 bg-white flex flex-col justify-between">
+                                        <h4 class="font-bold text-slate-800 border-b border-stone-100 pb-2 text-sm mb-4">Nivel Avanzado</h4>
+                                        <div class="space-y-4 mb-4">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm text-stone-600">Workspace Plus:</span>
+                                                    <span id="plusGoogleCostCOP" class="text-xs text-stone-400 mt-1">$0 COP</span>
+                                                </div>
+                                                <span id="plusGoogleCost" class="text-base font-bold text-slate-900">$0 USD</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm text-stone-600">M365 Premium:</span>
+                                                    <span id="premiumMSCostCOP" class="text-xs text-stone-400 mt-1">$0 COP</span>
+                                                </div>
+                                                <span id="premiumMSCost" class="text-base font-bold text-slate-900">$0 USD</span>
+                                            </div>
+                                        </div>
+                                        <div class="bg-stone-50 p-2 rounded-lg text-center text-xs text-slate-600 font-medium" id="tier3Savings">-</div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-stone-500 leading-relaxed italic mt-4">* Los precios no incluyen impuestos locales y son estimaciones basadas en MSRP oficial. Los Add-ons de IA Generativa (Copilot M365 Completo / Gemini Advanced) tienen costo adicional mensual por usuario independiente del plan base.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section 7: Recomendador -->
+                <section id="recomendador" class="scroll-mt-24">
+                    <div class="bg-slate-900 text-white p-8 md:p-14 rounded-3xl shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 rounded-full bg-indigo-600 opacity-20 blur-3xl"></div>
+                        
+                        <div class="relative z-10 max-w-4xl mx-auto">
+                            <span class="text-indigo-400 font-semibold tracking-wider text-sm uppercase mb-2 block">Herramienta Interactiva</span>
+                            <h2 class="text-3xl md:text-4xl font-extrabold mb-4">Recomendador Estratégico</h2>
+                            <p class="text-slate-300 mb-10 text-lg">Responda sinceramente estas 3 preguntas operativas para obtener el diagnóstico y justificación ideal para su Comité de Compras.</p>
+
+                            <form id="decisionForm" class="space-y-8">
+                                <div class="bg-slate-800/80 p-8 rounded-2xl border border-slate-700/50 backdrop-blur-sm">
+                                    <p class="font-semibold text-lg md:text-xl mb-6">1. Sobre las asambleas, webinars o reuniones masivas (ej. fin de año, lanzamiento corporativo):</p>
+                                    <div class="flex flex-col md:flex-row gap-6">
+                                        <label class="flex-1 flex items-start gap-4 cursor-pointer group">
+                                            <input type="radio" name="q1" value="google" class="mt-1 w-5 h-5 text-indigo-500 bg-slate-900 border-slate-600 focus:ring-indigo-600 focus:ring-offset-slate-900">
+                                            <span class="group-hover:text-indigo-300 transition-colors">Son vitales. Necesitamos capacidad para agrupar entre 300 y 500 personas en la misma sala sin pagar licencias de nivel Enterprise.</span>
+                                        </label>
+                                        <label class="flex-1 flex items-start gap-4 cursor-pointer group">
+                                            <input type="radio" name="q1" value="ms" class="mt-1 w-5 h-5 text-indigo-500 bg-slate-900 border-slate-600 focus:ring-indigo-600 focus:ring-offset-slate-900">
+                                            <span class="group-hover:text-indigo-300 transition-colors">Rara vez suceden. Un límite estricto de 300 personas (o menos) cubre perfectamente nuestras operaciones diarias.</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-800/80 p-8 rounded-2xl border border-slate-700/50 backdrop-blur-sm">
+                                    <p class="font-semibold text-lg md:text-xl mb-6">2. Sobre el uso de Excel y herramientas ofimáticas por parte del equipo financiero/contable:</p>
+                                    <div class="flex flex-col md:flex-row gap-6">
+                                        <label class="flex-1 flex items-start gap-4 cursor-pointer group">
+                                            <input type="radio" name="q2" value="ms" class="mt-1 w-5 h-5 text-indigo-500 bg-slate-900 border-slate-600 focus:ring-indigo-600 focus:ring-offset-slate-900">
+                                            <span class="group-hover:text-indigo-300 transition-colors">Dependen absolutamente de macros complejas (VBA), complementos avanzados y la potencia del Excel <em>instalado</em> en la computadora física.</span>
+                                        </label>
+                                        <label class="flex-1 flex items-start gap-4 cursor-pointer group">
+                                            <input type="radio" name="q2" value="google" class="mt-1 w-5 h-5 text-indigo-500 bg-slate-900 border-slate-600 focus:ring-indigo-600 focus:ring-offset-slate-900">
+                                            <span class="group-hover:text-indigo-300 transition-colors">Hacen trabajo colaborativo. Trabajar en hojas de cálculo directamente en el navegador (web) es suficiente y valoran más que varios editen a la vez sin trabas.</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-800/80 p-8 rounded-2xl border border-slate-700/50 backdrop-blur-sm">
+                                    <p class="font-semibold text-lg md:text-xl mb-6">3. Sobre la experiencia de cara al cliente (Invitados externos a sus reuniones):</p>
+                                    <div class="flex flex-col gap-4">
+                                        <label class="flex items-start gap-4 cursor-pointer group">
+                                            <input type="radio" name="q3" value="google" class="mt-1 w-5 h-5 text-indigo-500 bg-slate-900 border-slate-600 focus:ring-indigo-600 focus:ring-offset-slate-900">
+                                            <span class="group-hover:text-indigo-300 transition-colors">Priorizamos la <strong>cero fricción</strong>. El cliente debe entrar con un solo clic, sin que le pida descargar programas ni crear cuentas complicadas.</span>
+                                        </label>
+                                        <label class="flex items-start gap-4 cursor-pointer group">
+                                            <input type="radio" name="q3" value="ms" class="mt-1 w-5 h-5 text-indigo-500 bg-slate-900 border-slate-600 focus:ring-indigo-600 focus:ring-offset-slate-900">
+                                            <span class="group-hover:text-indigo-300 transition-colors">Preferimos un entorno más <strong>estructurado e institucional</strong> (Teams), asumiendo que el cliente pueda requerir instalar la app o lidiar con lobbies de espera.</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Inline Error Message (Replaces Alert) -->
+                                <div id="formError" class="hidden bg-red-500/20 text-red-200 border border-red-500/50 p-4 rounded-xl flex items-center gap-3">
+                                    <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    <p>Por favor, seleccione una respuesta para las 3 preguntas antes de solicitar el diagnóstico.</p>
+                                </div>
+
+                                <div class="pt-6">
+                                    <button type="button" onclick="calculateRecommendation()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-lg py-4 px-10 rounded-xl shadow-lg transition-transform active:scale-95 w-full md:w-auto">
+                                        Generar Diagnóstico de Compra
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Result Box -->
+                            <div id="recommendationResult" class="hidden mt-12 p-8 bg-white text-slate-900 rounded-2xl shadow-2xl border-l-8 transition-all duration-700 translate-y-4 opacity-0">
+                                <div class="flex items-start gap-4 mb-4">
+                                    <span id="recIcon" class="text-4xl"></span>
+                                    <div>
+                                        <span class="text-sm font-bold text-stone-400 uppercase tracking-widest mb-1 block">Veredicto del Sistema</span>
+                                        <h3 id="recTitle" class="text-3xl font-black"></h3>
+                                    </div>
+                                </div>
+                                <div class="prose prose-stone max-w-none mt-6">
+                                    <p id="recDesc" class="text-stone-700 text-lg leading-relaxed"></p>
+                                    <div id="recAction" class="mt-6 p-4 rounded-xl font-medium text-sm"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
             </div>
-        </section>
-
-        <!-- Section: Recomendador Interactivo -->
-        <section id="recomendador" class="bg-slate-900 text-white p-8 md:p-12 rounded-2xl shadow-lg relative overflow-hidden">
-            <!-- Deco element -->
-            <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-slate-800 opacity-50 blur-3xl"></div>
-            
-            <div class="relative z-10 max-w-3xl mx-auto">
-                <h2 class="text-3xl font-bold mb-4">Herramienta de Decisión para Compras</h2>
-                <p class="text-slate-300 mb-8">Responda estas 3 preguntas para obtener una recomendación fundamentada basada en el perfil de su organización.</p>
-
-                <form id="decisionForm" class="space-y-6">
-                    <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                        <p class="font-medium text-lg mb-4">1. ¿Tienen previsto realizar reuniones frecuentes con más de 300 participantes (ej. asambleas de toda la empresa o webinars masivos)?</p>
-                        <div class="flex gap-6">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="q1" value="google" class="w-5 h-5 text-indigo-500 bg-slate-900 border-slate-600 focus:ring-indigo-600 focus:ring-offset-slate-900">
-                                <span>Sí, necesitamos hasta 500 participantes.</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="q1" value="ms" class="w-5 h-5 text-indigo-500 bg-slate-900 border-slate-600 focus:ring-indigo-600 focus:ring-offset-slate-900">
-                                <span>No, 300 participantes es suficiente.</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                        <p class="font-medium text-lg mb-4">2. ¿Sus usuarios financieros y operativos dependen de macros complejas, funciones avanzadas y software instalado en PC de Excel/Word?</p>
-                        <div class="flex gap-6">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="q2" value="ms" class="w-5 h-5 text-indigo-500 bg-slate-900 border-slate-600 focus:ring-indigo-600 focus:ring-offset-slate-900">
-                                <span>Sí, el software de escritorio es innegociable.</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="q2" value="google" class="w-5 h-5 text-indigo-500 bg-slate-900 border-slate-600 focus:ring-indigo-600 focus:ring-offset-slate-900">
-                                <span>No, trabajar todo en el navegador web está bien.</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                        <p class="font-medium text-lg mb-4">3. Al interactuar con clientes externos, ¿qué es más importante?</p>
-                        <div class="flex flex-col gap-3">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="q3" value="google" class="w-5 h-5 text-indigo-500 bg-slate-900 border-slate-600 focus:ring-indigo-600 focus:ring-offset-slate-900">
-                                <span>Simplicidad extrema: entrar a videollamada con un solo clic, sin fricciones.</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="q3" value="ms" class="w-5 h-5 text-indigo-500 bg-slate-900 border-slate-600 focus:ring-indigo-600 focus:ring-offset-slate-900">
-                                <span>Estructura: Crear salas de espera formales, lobbies corporativos y chat estructurado pre-reunión.</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="pt-4">
-                        <button type="button" onclick="calculateRecommendation()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-8 rounded-lg shadow transition w-full md:w-auto">
-                            Ver Recomendación
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Result Box -->
-                <div id="recommendationResult" class="hidden mt-8 p-6 bg-white text-slate-900 rounded-xl shadow-xl border-l-8 transition-all duration-500">
-                    <h3 id="recTitle" class="text-2xl font-bold mb-2"></h3>
-                    <p id="recDesc" class="text-stone-700 text-lg"></p>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <footer class="bg-white border-t border-stone-200 mt-16 py-8 text-center text-stone-500 text-sm">
-        <p>Informe interactivo generado para el Comité de Adquisiciones. Basado en planes estándar comerciales (Business) vigentes.</p>
-    </footer>
+        </main>
+    </div>
 
     <script>
-        // --- CHOSEN PALETTE LOGIC ---
-        // Blue accents for Microsoft, Green/Multi for Google, Neutral stones for background.
+        // --- SIDEBAR LOGIC ---
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        let isSidebarOpen = true;
 
-        // --- BUDGET CALCULATOR LOGIC ---
+        // Auto-close on small screens initially
+        if (window.innerWidth < 768) {
+            isSidebarOpen = false;
+            sidebar.classList.add('sidebar-closed');
+            sidebar.classList.remove('sidebar-open');
+        }
+
+        function toggleSidebar() {
+            isSidebarOpen = !isSidebarOpen;
+            if (isSidebarOpen) {
+                sidebar.classList.remove('sidebar-closed', 'md:sidebar-closed');
+                sidebar.classList.add('sidebar-open', 'md:sidebar-open');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.remove('sidebar-open', 'md:sidebar-open');
+                sidebar.classList.add('sidebar-closed', 'md:sidebar-closed');
+                overlay.classList.add('hidden');
+            }
+            // Trigger chart resize event so canvas adapts to new layout width
+            setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
+        }
+
+        function closeSidebarMobile() {
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
+
+        // --- TAB LOGIC ---
+        function switchTier(tierId) {
+            document.querySelectorAll('.tier-content').forEach(el => el.classList.add('hidden'));
+            
+            const btns = ['btn-tier-1', 'btn-tier-2', 'btn-tier-3'];
+            btns.forEach(id => {
+                const btn = document.getElementById(id);
+                btn.classList.remove('text-slate-900', 'border-slate-900', 'font-bold');
+                btn.classList.add('text-stone-500', 'border-transparent');
+            });
+
+            document.getElementById(tierId).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-${tierId}`);
+            activeBtn.classList.remove('text-stone-500', 'border-transparent');
+            activeBtn.classList.add('text-slate-900', 'border-slate-900', 'font-bold');
+        }
+
+        // --- CALCULATOR LOGIC ---
         function updateCalculatorBudget() {
             const users = Math.max(1, parseInt(document.getElementById('usersCount').value) || 1);
             const commitment = document.querySelector('input[name="calcCommitment"]:checked').value;
             const copRate = Math.max(1, parseFloat(document.getElementById('calcExchangeRate').value) || 4000);
 
-            // Price matrix [Google, MS]
+            // MSRP Matrix [Google, MS]
             const pricing = {
                 tier1: commitment === 'annual' ? [7.00, 6.00] : [8.40, 7.20],
                 tier2: commitment === 'annual' ? [14.00, 12.50] : [16.80, 15.00],
                 tier3: commitment === 'annual' ? [22.00, 22.00] : [26.40, 26.40]
             };
 
-            // Calculate costs
-            const costStarter = users * pricing.tier1[0];
-            const costBasic = users * pricing.tier1[1];
-            
-            const costStandardGoogle = users * pricing.tier2[0];
-            const costStandardMS = users * pricing.tier2[1];
+            const formatUSD = val => `$${val.toFixed(2)} USD`;
+            const formatCOP = val => `~ $${Math.round(val * copRate).toLocaleString('es-CO')} COP`;
 
-            const costPlusGoogle = users * pricing.tier3[0];
-            const costPremiumMS = users * pricing.tier3[1];
-
-            // Helper to format currency
-            const formatUSD = (val) => `$${val.toFixed(2)} USD`;
-            const formatCOP = (val) => `~ $${Math.round(val * copRate).toLocaleString('es-CO')} COP`;
-
-            // Set Starter / Basic
-            document.getElementById('starterCost').innerText = formatUSD(costStarter);
-            document.getElementById('starterCostCOP').innerText = formatCOP(costStarter);
-            document.getElementById('basicCost').innerText = formatUSD(costBasic);
-            document.getElementById('basicCostCOP').innerText = formatCOP(costBasic);
-
-            // Set Standards
-            document.getElementById('standardGoogleCost').innerText = formatUSD(costStandardGoogle);
-            document.getElementById('standardGoogleCostCOP').innerText = formatCOP(costStandardGoogle);
-            document.getElementById('standardMSCost').innerText = formatUSD(costStandardMS);
-            document.getElementById('standardMSCostCOP').innerText = formatCOP(costStandardMS);
-
-            // Set Plus / Premiums
-            document.getElementById('plusGoogleCost').innerText = formatUSD(costPlusGoogle);
-            document.getElementById('plusGoogleCostCOP').innerText = formatCOP(costPlusGoogle);
-            document.getElementById('premiumMSCost').innerText = formatUSD(costPremiumMS);
-            document.getElementById('premiumMSCostCOP').innerText = formatCOP(costPremiumMS);
-
-            // Calculate & show savings/difference highlights
-            const calculateSavingsHTML = (googleVal, msVal) => {
-                const diff = Math.abs(googleVal - msVal);
-                if (googleVal < msVal) {
-                    return `🟢 Google es más económico por <b class="text-green-700">$${diff.toFixed(2)} USD/mes</b>`;
-                } else if (msVal < googleVal) {
-                    return `🔵 Microsoft es más económico por <b class="text-blue-700">$${diff.toFixed(2)} USD/mes</b>`;
-                } else {
-                    return `⚖️ Ambos cuestan exactamente lo mismo`;
-                }
+            // Calculate Totals (Per Month for the whole team)
+            const calcAndSet = (googleId, msId, tierData) => {
+                const gTotal = users * tierData[0];
+                const mTotal = users * tierData[1];
+                
+                document.getElementById(`${googleId}Cost`).innerText = formatUSD(gTotal);
+                document.getElementById(`${googleId}CostCOP`).innerText = formatCOP(gTotal);
+                document.getElementById(`${msId}Cost`).innerText = formatUSD(mTotal);
+                document.getElementById(`${msId}CostCOP`).innerText = formatCOP(mTotal);
+                
+                return { g: gTotal, m: mTotal };
             };
 
-            document.getElementById('tier1Savings').innerHTML = calculateSavingsHTML(costStarter, costBasic);
-            document.getElementById('tier2Savings').innerHTML = calculateSavingsHTML(costStandardGoogle, costStandardMS);
-            document.getElementById('tier3Savings').innerHTML = calculateSavingsHTML(costPlusGoogle, costPremiumMS);
+            const t1 = calcAndSet('starter', 'basic', pricing.tier1);
+            const t2 = calcAndSet('standardGoogle', 'standardMS', pricing.tier2);
+            const t3 = calcAndSet('plusGoogle', 'premiumMS', pricing.tier3);
+
+            // Update Savings labels
+            const getSavingsHTML = (g, m) => {
+                const diff = Math.abs(g - m);
+                if (g < m) return `🟢 Workspace ahorra <b class="text-green-700">$${diff.toFixed(2)} USD</b>/mes`;
+                if (m < g) return `🔵 M365 ahorra <b class="text-blue-700">$${diff.toFixed(2)} USD</b>/mes`;
+                return `⚖️ Costos igualados en este nivel`;
+            };
+
+            document.getElementById('tier1Savings').innerHTML = getSavingsHTML(t1.g, t1.m);
+            document.getElementById('tier2Savings').innerHTML = getSavingsHTML(t2.g, t2.m);
+            document.getElementById('tier3Savings').innerHTML = getSavingsHTML(t3.g, t3.m);
         }
 
-        // --- TAB LOGIC ---
-        function switchTier(tierId) {
-            // Hide all tiers
-            document.getElementById('tier-1').classList.add('hidden');
-            document.getElementById('tier-2').classList.add('hidden');
-            document.getElementById('tier-3').classList.add('hidden');
-            
-            // Reset buttons
-            const btns = ['btn-tier-1', 'btn-tier-2', 'btn-tier-3'];
-            btns.forEach(id => {
-                document.getElementById(id).classList.remove('tab-active');
-                document.getElementById(id).classList.add('tab-inactive');
-            });
-
-            // Show selected
-            document.getElementById(tierId).classList.remove('hidden');
-            document.getElementById(`btn-${tierId}`).classList.remove('tab-inactive');
-            document.getElementById(`btn-${tierId}`).classList.add('tab-active');
-        }
-
-        // --- CHART.JS VISUALIZATIONS ---
+        // --- CHART JS ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Start budget calculations on load
             updateCalculatorBudget();
 
-            // Chart 1: Participants Comparison (Bar Chart)
             const ctx1 = document.getElementById('participantsChart').getContext('2d');
             new Chart(ctx1, {
                 type: 'bar',
                 data: {
-                    labels: ['Plan Básico', 'Plan Estándar', 'Plan Avanzado (Plus/Premium)'],
+                    labels: ['Planes Iniciales', 'Planes Estándar', 'Planes Plus / Premium'],
                     datasets: [
                         {
-                            label: 'Google Workspace (Meet)',
+                            label: 'Límite Google Meet',
                             data: [100, 150, 500],
-                            backgroundColor: 'rgba(52, 168, 83, 0.7)',
-                            borderColor: 'rgba(52, 168, 83, 1)',
-                            borderWidth: 1,
-                            borderRadius: 4
+                            backgroundColor: 'rgba(52, 168, 83, 0.8)',
+                            borderRadius: 6
                         },
                         {
-                            label: 'Microsoft 365 (Teams)',
+                            label: 'Límite Microsoft Teams (Business)',
                             data: [300, 300, 300],
-                            backgroundColor: 'rgba(0, 120, 212, 0.7)',
-                            borderColor: 'rgba(0, 120, 212, 1)',
-                            borderWidth: 1,
-                            borderRadius: 4
+                            backgroundColor: 'rgba(0, 120, 212, 0.8)',
+                            borderRadius: 6
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'top' },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ' + context.parsed.y + ' pax';
-                                }
-                            }
-                        }
-                    },
+                    plugins: { legend: { position: 'top' } },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            title: { display: true, text: 'Nº Máx. de Participantes' }
-                        }
-                    }
-                }
-            });
-
-            // Chart 2: Ecosystem Radar
-            const ctx2 = document.getElementById('ecosystemRadar').getContext('2d');
-            new Chart(ctx2, {
-                type: 'radar',
-                data: {
-                    labels: ['Fricción Cero (Clientes)', 'Gestión Documental Compleja', 'Apps Instalables (Escritorio)', 'Colaboración Simultánea Nube', 'Capacidad Reuniones (Business)'],
-                    datasets: [
-                        {
-                            label: 'Google Workspace',
-                            data: [9, 6, 2, 10, 9],
-                            fill: true,
-                            backgroundColor: 'rgba(52, 168, 83, 0.2)',
-                            borderColor: 'rgb(52, 168, 83)',
-                            pointBackgroundColor: 'rgb(52, 168, 83)',
-                            pointBorderColor: '#fff',
-                            pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgb(52, 168, 83)'
-                        },
-                        {
-                            label: 'Microsoft 365',
-                            data: [6, 9, 10, 7, 6],
-                            fill: true,
-                            backgroundColor: 'rgba(0, 120, 212, 0.2)',
-                            borderColor: 'rgb(0, 120, 212)',
-                            pointBackgroundColor: 'rgb(0, 120, 212)',
-                            pointBorderColor: '#fff',
-                            pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgb(0, 120, 212)'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    elements: {
-                        line: { borderWidth: 3 }
-                    },
-                    scales: {
-                        r: {
-                            angleLines: { display: true },
-                            suggestedMin: 0,
-                            suggestedMax: 10
+                            title: { display: true, text: 'Máximo Participantes Simultáneos' }
                         }
                     }
                 }
             });
         });
 
-        // --- RECOMMENDATION ENGINE LOGIC ---
+        // --- RECOMMENDATION ENGINE (No Alerts) ---
         function calculateRecommendation() {
             const form = document.getElementById('decisionForm');
             const resultBox = document.getElementById('recommendationResult');
+            const errorBox = document.getElementById('formError');
+            const recIcon = document.getElementById('recIcon');
             const recTitle = document.getElementById('recTitle');
             const recDesc = document.getElementById('recDesc');
-
-            let googleScore = 0;
-            let msScore = 0;
+            const recAction = document.getElementById('recAction');
 
             const q1 = form.elements['q1'].value;
             const q2 = form.elements['q2'].value;
             const q3 = form.elements['q3'].value;
 
+            // Validation replacing alert()
             if (!q1 || !q2 || !q3) {
-                alert("Por favor, responda las 3 preguntas para obtener una recomendación precisa.");
+                errorBox.classList.remove('hidden');
+                resultBox.classList.add('hidden');
+                resultBox.classList.remove('translate-y-0', 'opacity-100');
                 return;
             }
+            errorBox.classList.add('hidden');
 
-            if (q1 === 'google') googleScore += 2; // High weight for participant limit (user's main concern)
+            let googleScore = 0, msScore = 0;
+
+            if (q1 === 'google') googleScore += 3; // Critical requirement
             if (q1 === 'ms') msScore += 1;
             
-            if (q2 === 'ms') msScore += 2; // High weight for desktop app dependency
+            if (q2 === 'ms') msScore += 3; // Critical dependency
             if (q2 === 'google') googleScore += 1;
 
-            if (q3 === 'google') googleScore += 1.5;
-            if (q3 === 'ms') msScore += 1.5;
+            if (q3 === 'google') googleScore += 2;
+            if (q3 === 'ms') msScore += 2;
 
+            // Reset classes
             resultBox.classList.remove('hidden', 'border-green-500', 'border-blue-500', 'border-yellow-500');
+            // Trigger animation
+            setTimeout(() => {
+                resultBox.classList.remove('translate-y-4', 'opacity-0');
+                resultBox.classList.add('translate-y-0', 'opacity-100');
+            }, 50);
 
             if (googleScore > msScore) {
                 resultBox.classList.add('border-green-500');
-                recTitle.innerHTML = "🏆 Recomendación: Google Workspace (Plan Business Plus)";
-                recTitle.className = "text-2xl font-bold mb-2 text-green-700";
-                recDesc.innerHTML = "Basado en sus respuestas, especialmente su necesidad de alojar videollamadas masivas (hasta 500 participantes) de forma ágil y conectarse con clientes externos sin fricción, <strong>Google Workspace Business Plus</strong> es la inversión más eficiente. Evitará pagar licencias Enterprise costosas solo para aumentar la capacidad de la reunión.";
+                recIcon.innerHTML = "🏆";
+                recTitle.innerHTML = "Google Workspace (Business Plus)";
+                recTitle.className = "text-3xl font-black text-green-700";
+                recDesc.innerHTML = "La recomendación lógica para sus operaciones es <strong>Google Workspace Business Plus</strong>. Su requerimiento explícito de agrupar hasta 500 personas en reuniones descarta por completo la viabilidad económica de Microsoft 365 Business (que los limitaría a 300). Sumado a su deseo de dar a los invitados acceso sin fricción mediante web, la agilidad de Google Meet es imbatible. Además, sus usuarios podrán chatear con sus documentos corporativos de forma segura utilizando <strong>NotebookLM</strong>.";
+                recAction.className = "mt-6 p-4 rounded-xl font-medium text-sm bg-green-50 text-green-800 border border-green-200";
+                recAction.innerHTML = "💡 <strong>Paso de compra sugerido:</strong> Adquirir licencias Workspace Business Plus. Asegúrese de capacitar al área financiera en el uso colaborativo de Google Sheets para minimizar la dependencia del Excel instalado.";
             } else if (msScore > googleScore) {
                 resultBox.classList.add('border-blue-500');
-                recTitle.innerHTML = "🏆 Recomendación: Microsoft 365 (Plan Empresa Estándar/Premium)";
-                recTitle.className = "text-2xl font-bold mb-2 text-blue-700";
-                recDesc.innerHTML = "Su dependencia del software de escritorio (Excel/Word avanzado) hace que <strong>Microsoft 365</strong> sea imprescindible. Tenga en cuenta que estará limitado a 300 participantes por reunión de Teams. Si necesita más, deberá planificar presupuesto adicional para licencias Enterprise (E3/E5) en el futuro.";
+                recIcon.innerHTML = "🏆";
+                recTitle.innerHTML = "Microsoft 365 (Empresa Estándar / Premium)";
+                recTitle.className = "text-3xl font-black text-blue-700";
+                recDesc.innerHTML = "La recomendación clara es <strong>Microsoft 365</strong>. Debido a que su equipo financiero y operativo requiere obligatoriamente del software instalado de Excel con macros completas, migrar a la nube pura rompería sus flujos de trabajo críticos. Aunque el límite de 300 personas en Teams es rígido, la profundidad estructural que ofrece Teams como hub central, sumado al poder de <strong>Copilot</strong> para automatizar diapositivas y hojas de cálculo complejas, compensa el sacrificio en asambleas masivas.";
+                recAction.className = "mt-6 p-4 rounded-xl font-medium text-sm bg-blue-50 text-blue-800 border border-blue-200";
+                recAction.innerHTML = "💡 <strong>Paso de compra sugerido:</strong> Adquirir MS Empresa Estándar o Premium. Si en el futuro <em>exceden</em> las 300 personas en asambleas, deberán presupuestar un upgrade a licencias Enterprise E3/E5 solo para los organizadores del evento.";
             } else {
                 resultBox.classList.add('border-yellow-500');
-                recTitle.innerHTML = "⚖️ Empate Técnico: Decisión Estratégica";
-                recTitle.className = "text-2xl font-bold mb-2 text-yellow-700";
-                recDesc.innerHTML = "Sus necesidades están divididas. Sugerimos evaluar el perfil demográfico de su empresa: Si su equipo es tradicional y usa mucho Excel complejo, opte por <strong>Microsoft 365</strong>. Si su equipo busca modernización, rapidez en la nube y asambleas grandes sin costos ocultos, opte por <strong>Google Workspace</strong>.";
+                recIcon.innerHTML = "⚖️";
+                recTitle.innerHTML = "Decisión Dividida (Estrategia Híbrida)";
+                recTitle.className = "text-3xl font-black text-yellow-700";
+                recDesc.innerHTML = "El cuestionario detecta un <strong>empate técnico</strong> entre sus necesidades departamentales. Tienen requerimientos de reuniones masivas (Fuerte en Google) pero dependencia ofimática clásica (Fuerte en Microsoft).";
+                recAction.className = "mt-6 p-4 rounded-xl font-medium text-sm bg-yellow-50 text-yellow-800 border border-yellow-200";
+                recAction.innerHTML = "💡 <strong>Paso de compra sugerido:</strong> El Comité debe decidir qué pesa más operativamente o considerar un despliegue mixto: Google Workspace para el 80% de la empresa (ventas, soporte, marketing) y Microsoft 365 (o licencias Office locales perpetuas) exclusivamente para el área contable/financiera.";
             }
         }
     </script>
